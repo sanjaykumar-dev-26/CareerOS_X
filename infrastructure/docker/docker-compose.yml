@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: careerosx-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: careerosx
+      POSTGRES_USER: careerosx
+      POSTGRES_PASSWORD: careerosx
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - careerosx-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  careerosx-postgres-data:
+    external: true
