@@ -15,6 +15,17 @@ public class User {
     @Column(nullable = false,unique = true)
     private String email;
     @Column(name = "password_hash",nullable = false)
-    private String password_hash;
-    
+    private String passwordHash;
+    public User() {
+    }
+    public User(String email, String passwordHash) {
+        this.email = email;
+        this.passwordHash = passwordHash;
+    }
+    public String getEmail() {
+        return email;
+    }
+    public String getPasswordHash() {
+        return passwordHash;
+    }
 }
