@@ -27,5 +27,24 @@ public class JwtService {
     public String generateRefreshToken(String email) {
         return Jwts.builder().subject(email).expiration(new Date(System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000)).signWith(key).compact();
     }
+    public boolean isTokenValid(String token) {
+    try {
+        Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token);
 
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    public String extractEmail(String token) {
+    return Jwts.parser()
+            .verifyWith(key)
+            .build()
+            .parseSignedClaims(token)
+            .getPayload()
+            .getSubject();
+    }
 }
