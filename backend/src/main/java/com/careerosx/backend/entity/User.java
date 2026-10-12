@@ -28,4 +28,7 @@ public class User {
     public String getPasswordHash() {
         return passwordHash;
     }
+    public Long getId() {
+        return id;
+    }
 }
