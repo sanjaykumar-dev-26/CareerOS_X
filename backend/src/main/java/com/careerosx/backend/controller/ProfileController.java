@@ -14,6 +14,9 @@ import jakarta.validation.Valid;
 import com.careerosx.backend.dto.UpdateProfileRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
+import com.careerosx.backend.dto.ChangePasswordRequest;
+import com.careerosx.backend.service.ProfileService;
+import org.springframework.http.ResponseEntity;
 
 
 @RestController
@@ -21,9 +24,11 @@ import org.springframework.web.server.ResponseStatusException;
 public class ProfileController {
 
     private final UserRepository userRepository;
+    private final ProfileService profileService;
 
-    public ProfileController(UserRepository userRepository) {
+    public ProfileController(UserRepository userRepository,ProfileService profileService) {
         this.userRepository = userRepository;
+        this.profileService = profileService;
     }
 
     @GetMapping
@@ -55,4 +60,14 @@ public class ProfileController {
         User updatedUser = userRepository.save(user);
         return new ProfileResponse(updatedUser.getId(), updatedUser.getEmail());
     }
+
+    @PutMapping("/change-password")
+    public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request,Authentication authentication) {
+    profileService.changePassword(
+            authentication.getName(),
+            request.getCurrentPassword(),
+            request.getNewPassword()
+    );
+    return ResponseEntity.noContent().build();
+    }   
 }
