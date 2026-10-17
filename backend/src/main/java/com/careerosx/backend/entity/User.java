@@ -22,6 +22,9 @@ public class User {
         this.email = email;
         this.passwordHash = passwordHash;
     }
+    public void setEmail(String email) {
+    this.email = email;
+    }
     public String getEmail() {
         return email;
     }

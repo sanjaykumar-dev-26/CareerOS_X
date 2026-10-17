@@ -8,6 +8,13 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import jakarta.validation.Valid;
+import com.careerosx.backend.dto.UpdateProfileRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
+
 
 @RestController
 @RequestMapping("/profile")
@@ -24,8 +31,28 @@ public class ProfileController {
         String email = authentication.getName();
 
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "User not found"
+        ));
 
         return new ProfileResponse(user.getId(), user.getEmail());
+    }
+    @PutMapping
+    public ProfileResponse updateProfile(@Valid @RequestBody UpdateProfileRequest request, Authentication authentication){
+        
+        String currentEmail = authentication.getName();
+        String newEmail = request.getEmail();
+        User user = userRepository.findByEmail(currentEmail)
+                .orElseThrow(() -> new ResponseStatusException(
+        HttpStatus.NOT_FOUND,
+        "User not found"
+   ));
+        if (!newEmail.equalsIgnoreCase(currentEmail)&& userRepository.existsByEmail(newEmail)) {
+        throw new ResponseStatusException( HttpStatus.CONFLICT,"Email is already registered");
+        }
+        user.setEmail(request.getEmail());
+        User updatedUser = userRepository.save(user);
+        return new ProfileResponse(updatedUser.getId(), updatedUser.getEmail());
     }
 }
