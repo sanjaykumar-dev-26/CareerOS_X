@@ -1,4 +1,3 @@
-
 package com.careerosx.backend.controller;
 
 import com.careerosx.backend.dto.ProfileResponse;
