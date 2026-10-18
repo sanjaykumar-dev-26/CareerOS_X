@@ -29,8 +29,8 @@ public class AuthService {
             User user=new User(registerRequest.getEmail(),hashedPassword);
             User savedUser=userRepository.save(user);
 
-        String accessToken = jwtService.generateToken(savedUser.getEmail());
-        String refreshToken = jwtService.generateRefreshToken(savedUser.getEmail());
+        String accessToken = jwtService.generateToken(savedUser.getEmail(),savedUser.getTokenVersion());
+        String refreshToken = jwtService.generateRefreshToken(savedUser.getEmail(),savedUser.getTokenVersion());
         return new AuthResponse(accessToken, refreshToken);
         }
     }
@@ -43,8 +43,8 @@ public class AuthService {
                 throw new RuntimeException("invalid password");
             }           
             else{
-                String accessToken = jwtService.generateToken(user.getEmail());
-                String refreshToken = jwtService.generateRefreshToken(user.getEmail());
+                String accessToken = jwtService.generateToken(user.getEmail(),user.getTokenVersion());
+                String refreshToken = jwtService.generateRefreshToken(user.getEmail(),user.getTokenVersion());
                 return new AuthResponse(accessToken, refreshToken);
             }            
         }

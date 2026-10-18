@@ -50,6 +50,7 @@ public class ProfileService {
         }
 
         user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.incrementTokenVersion(); // Invalidate existing tokens
         userRepository.save(user);
     }
 }

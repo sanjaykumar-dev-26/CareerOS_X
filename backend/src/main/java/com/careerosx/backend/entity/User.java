@@ -16,6 +16,8 @@ public class User {
     private String email;
     @Column(name = "password_hash",nullable = false)
     private String passwordHash;
+    @Column(name = "token_version",nullable = false)
+    private int tokenVersion = 0;
     public User() {
     }
     public User(String email, String passwordHash) {
@@ -36,5 +38,14 @@ public class User {
     }
     public Long getId() {
         return id;
+    }
+    public int getTokenVersion() {
+        return tokenVersion;
+    }
+    public void incrementTokenVersion() {
+        this.tokenVersion++;
+    }
+    public void setTokenVersion(int tokenVersion) {
+        this.tokenVersion = tokenVersion;
     }
 }
