@@ -25,22 +25,22 @@ public class JwtService {
         byte[] keyBytes = Base64.getDecoder().decode(secretKey);
         key = Keys.hmacShaKeyFor(keyBytes);
     }
-
     // Generate access token (15 minutes)
     public String generateToken(String email, int tokenVersion) {
         return Jwts.builder()
                 .subject(email)
                 .claim("tokenVersion", tokenVersion)
+                .claim("tokenType", "access")
                 .expiration(new Date(System.currentTimeMillis() + 15L * 60 * 1000))
                 .signWith(key)
                 .compact();
     }
-
     // Generate refresh token (7 days)
     public String generateRefreshToken(String email, int tokenVersion) {
         return Jwts.builder()
                 .subject(email)
                 .claim("tokenVersion", tokenVersion)
+                .claim("tokenType", "refresh")
                 .expiration(new Date(System.currentTimeMillis() + 7L * 24 * 60 * 60 * 1000))
                 .signWith(key)
                 .compact();
@@ -80,5 +80,24 @@ public class JwtService {
                 .get("tokenVersion");
 
         return ((Number) version).intValue();
+    }
+
+    // Extract token type
+    public String extractTokenType(String token) {
+        return Jwts.parser()
+                .verifyWith(key)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("tokenType", String.class);
+    }
+    // Check whether token is specifically a refresh token
+    public boolean isRefreshToken(String token) {
+        try {
+            return isTokenValid(token)
+                    && "refresh".equals(extractTokenType(token));
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

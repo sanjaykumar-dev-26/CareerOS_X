@@ -48,4 +48,26 @@ public class AuthService {
                 return new AuthResponse(accessToken, refreshToken);
             }            
         }
-    }   
+        public String refreshAccessToken(String refreshToken) {
+
+        // 1. Validate signature and expiry
+        if (!jwtService.isTokenValid(refreshToken)) {
+            throw new RuntimeException("Invalid or expired refresh token");
+        }
+        // 2. Ensure this is a refresh token, not an access token
+        if (!jwtService.isRefreshToken(refreshToken)) {
+            throw new RuntimeException("Token is not a refresh token");
+        }
+        // 3. Extract user details from token
+        String email = jwtService.extractEmail(refreshToken);
+        int tokenVersion = jwtService.extractTokenVersion(refreshToken);
+        // 4. Find user and verify current token version
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        if (user.getTokenVersion() != tokenVersion) {
+            throw new RuntimeException("Refresh token has been invalidated");
+        }
+        // 5. Generate a new access token
+        return jwtService.generateToken(user.getEmail(), user.getTokenVersion());
+    }
+}   

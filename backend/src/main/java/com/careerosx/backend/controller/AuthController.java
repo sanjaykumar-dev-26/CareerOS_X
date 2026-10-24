@@ -7,6 +7,8 @@ import com.careerosx.backend.dto.LoginRequest;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
+import com.careerosx.backend.dto.RefreshTokenRequest;
+
 
 import com.careerosx.backend.service.AuthService;
 
@@ -25,5 +27,9 @@ public class AuthController {
     @PostMapping ("/login")
     public AuthResponse login(@RequestBody LoginRequest loginRequest) {
         return authService.login(loginRequest);
+    }
+    @PostMapping("/refresh")
+    public String refresh(@RequestBody RefreshTokenRequest request) {
+        return authService.refreshAccessToken(request.getRefreshToken());
     }
 }
