@@ -11,6 +11,10 @@ import java.util.Date;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
 
 @Service
 public class JwtService {
@@ -99,5 +103,28 @@ public class JwtService {
         } catch (Exception e) {
             return false;
         }
+    }
+    public String hashToken(String token) {
+    try {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hashBytes = digest.digest(
+                token.getBytes(StandardCharsets.UTF_8)
+        );
+
+        return java.util.HexFormat.of().formatHex(hashBytes);
+    } catch (NoSuchAlgorithmException e) {
+        throw new IllegalStateException("SHA-256 is not available", e);
+    }
+}
+
+public Instant getRefreshTokenExpiry(String refreshToken) {
+    Date expiration = Jwts.parser()
+            .verifyWith(key)
+            .build()
+            .parseSignedClaims(refreshToken)
+            .getPayload()
+            .getExpiration();
+
+    return expiration.toInstant();
     }
 }
