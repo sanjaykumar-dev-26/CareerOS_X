@@ -72,8 +72,8 @@ public class AuthService {
             return new AuthResponse(accessToken, refreshToken);
             }            
         }
-    @Transactional
-    public AuthResponse refreshAccessToken(String refreshToken) {
+        @Transactional
+        public AuthResponse refreshAccessToken(String refreshToken) {
 
         // 1. Validate signature and expiry
         if (!jwtService.isTokenValid(refreshToken)) {
@@ -127,4 +127,21 @@ public class AuthService {
         refreshSessionRepository.save(session);
         return new AuthResponse(newAccessToken, newRefreshToken);
     }
-}   
+    @Transactional
+    public void logout(String refreshToken) {
+    if (!jwtService.isTokenValid(refreshToken)
+            || !jwtService.isRefreshToken(refreshToken)) {
+        throw new RuntimeException("Invalid refresh token");
+    }
+    String tokenHash = jwtService.hashToken(refreshToken);
+    RefreshSession session = refreshSessionRepository
+            .findByTokenHashForUpdate(tokenHash)
+            .orElseThrow(() ->
+                    new RuntimeException("Refresh session not found")
+            );
+
+    session.setRevoked(true);
+}
+
+}
+

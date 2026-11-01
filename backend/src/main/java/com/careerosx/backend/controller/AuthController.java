@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 import com.careerosx.backend.dto.RefreshTokenRequest;
-
+import org.springframework.http.ResponseEntity;
 
 import com.careerosx.backend.service.AuthService;
 
@@ -31,5 +31,10 @@ public class AuthController {
     @PostMapping("/refresh")
     public AuthResponse refresh(@RequestBody RefreshTokenRequest request) {
         return authService.refreshAccessToken(request.getRefreshToken());
+    }
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestBody RefreshTokenRequest request) {
+        authService.logout(request.getRefreshToken());
+        return ResponseEntity.noContent().build();
     }
 }

@@ -33,45 +33,43 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain)
-            throws ServletException, IOException {
+        HttpServletRequest request,
+        HttpServletResponse response,
+        FilterChain filterChain)
+        throws ServletException, IOException {
 
-        String authHeader = request.getHeader("Authorization");
+    String authHeader = request.getHeader("Authorization");
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
+    if (authHeader != null && authHeader.startsWith("Bearer ")) {
+        String token = authHeader.substring(7);
 
-            if (jwtService.isTokenValid(token)) {
-                try {
-                    String email = jwtService.extractEmail(token);
-                    int tokenVersion = jwtService.extractTokenVersion(token);
+        try {
+            if (jwtService.isTokenValid(token)
+                    && "access".equals(jwtService.extractTokenType(token))) {
 
-                    User user = userRepository.findByEmail(email).orElse(null);
+                String email = jwtService.extractEmail(token);
+                int tokenVersion = jwtService.extractTokenVersion(token);
 
-                    if (user != null
-                            && user.getTokenVersion() == tokenVersion) {
+                User user = userRepository.findByEmail(email).orElse(null);
 
-                        UsernamePasswordAuthenticationToken authentication =
-                                new UsernamePasswordAuthenticationToken(
-                                        email,
-                                        null,
-                                        Collections.emptyList()
-                                );
+                if (user != null && user.getTokenVersion() == tokenVersion) {
 
-                        var context =
-                                SecurityContextHolder.createEmptyContext();
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    email,
+                                    null,
+                                    Collections.emptyList()
+                            );
 
-                        context.setAuthentication(authentication);
-                        SecurityContextHolder.setContext(context);
-                    }
-                } catch (RuntimeException e) {
-                    SecurityContextHolder.clearContext();
+                    var context = SecurityContextHolder.createEmptyContext();
+                    context.setAuthentication(authentication);
+                    SecurityContextHolder.setContext(context);
                 }
             }
+        } catch (RuntimeException e) {
+            SecurityContextHolder.clearContext();
         }
-
-        filterChain.doFilter(request, response);
     }
+    filterChain.doFilter(request, response);
+}   
 }
