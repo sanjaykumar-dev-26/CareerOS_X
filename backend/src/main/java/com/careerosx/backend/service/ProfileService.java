@@ -4,6 +4,7 @@ package com.careerosx.backend.service;
 import com.careerosx.backend.dto.ProfileResponse;
 import com.careerosx.backend.entity.User;
 import com.careerosx.backend.repository.UserRepository;
+import com.careerosx.backend.repository.RefreshSessionRepository;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,12 +17,15 @@ public class ProfileService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshSessionRepository refreshSessionRepository;
 
     public ProfileService(
             UserRepository userRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            RefreshSessionRepository refreshSessionRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.refreshSessionRepository = refreshSessionRepository;
     }
 
     @Transactional
@@ -51,6 +55,7 @@ public class ProfileService {
 
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         user.incrementTokenVersion(); // Invalidate existing tokens
+        refreshSessionRepository.revokeAllByUserId(user.getId()); // Revoke all refresh sessions
         userRepository.save(user);
     }
 }
