@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestBody;
 import com.careerosx.backend.dto.RefreshTokenRequest;
 import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
 
 import com.careerosx.backend.service.AuthService;
 
@@ -21,7 +22,7 @@ public class AuthController {
     }
 
     @PostMapping ("/register")
-    public AuthResponse register(@RequestBody RegisterRequest registerRequest) {
+    public AuthResponse register(@Valid @RequestBody RegisterRequest registerRequest) {
         return authService.register(registerRequest);
     }
     @PostMapping ("/login")
