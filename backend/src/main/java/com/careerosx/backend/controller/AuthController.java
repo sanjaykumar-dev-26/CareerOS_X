@@ -26,15 +26,15 @@ public class AuthController {
         return authService.register(registerRequest);
     }
     @PostMapping ("/login")
-    public AuthResponse login(@RequestBody LoginRequest loginRequest) {
+    public AuthResponse login(@Valid @RequestBody LoginRequest loginRequest) {
         return authService.login(loginRequest);
     }
     @PostMapping("/refresh")
-    public AuthResponse refresh(@RequestBody RefreshTokenRequest request) {
+    public AuthResponse refresh(@Valid @RequestBody RefreshTokenRequest request) {
         return authService.refreshAccessToken(request.getRefreshToken());
     }
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestBody RefreshTokenRequest request) {
+    public ResponseEntity<Void> logout(@Valid @RequestBody RefreshTokenRequest request) {
         authService.logout(request.getRefreshToken());
         return ResponseEntity.noContent().build();
     }

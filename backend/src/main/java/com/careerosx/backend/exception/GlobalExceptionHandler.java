@@ -6,6 +6,8 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,6 +36,15 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.badRequest().body(body);
     }
-
-    
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidJson(
+        HttpMessageNotReadableException ex) {
+        Map<String, Object> body = Map.of(
+                "status", 400,
+                "message", "Invalid or malformed JSON request"
+        );
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(body);
+        }
 }
