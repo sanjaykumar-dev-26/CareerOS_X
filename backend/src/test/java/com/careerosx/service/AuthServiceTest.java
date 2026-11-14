@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.careerosx.backend.entity.User;
 import static org.mockito.ArgumentMatchers.any;
+import java.time.Instant;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -49,6 +50,10 @@ class AuthServiceTest {
         .thenReturn("access-token");
         when(jwtService.generateRefreshToken("test@gmail.com", 0))
         .thenReturn("refresh-token");
+        when(jwtService.hashToken("refresh-token"))
+        .thenReturn("hashed-refresh-token");
+        when(jwtService.getRefreshTokenExpiry("refresh-token"))
+        .thenReturn(Instant.parse("2027-01-01T00:00:00Z"));
         request.setEmail("test@gmail.com");
         request.setPassword("password123");
 
