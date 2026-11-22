@@ -31,9 +31,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.mock;
 
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.anyString;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -244,29 +248,104 @@ void loginShouldThrowExceptionWhenUserDoesNotExist() {
 
     verify(refreshSessionRepository, never()).save(any(RefreshSession.class));
 }
-        @Test
-        void logoutShouldRevokeRefreshSession() {
+        
+@Test
+void logoutShouldRevokeRefreshSession() {
 
-        // Arrange
-        String refreshToken = "refresh-token";
+    // Arrange
+    String refreshToken = "refresh-token";
+    RefreshSession session = new RefreshSession();
+    when(jwtService.isTokenValid(refreshToken))
+            .thenReturn(true);
+    when(jwtService.isRefreshToken(refreshToken))
+            .thenReturn(true);
+    when(jwtService.hashToken(refreshToken))
+            .thenReturn("hashed-refresh-token");
+    when(refreshSessionRepository.findByTokenHashForUpdate("hashed-refresh-token"))
+            .thenReturn(Optional.of(session));
+    // Act
+    authService.logout(refreshToken);
+    // Assert
+    assertTrue(session.isRevoked());
+}
+@Test
+void logoutShouldThrowExceptionWhenRefreshTokenIsInvalid() {
 
-        RefreshSession session = mock(RefreshSession.class);
-        when(jwtService.isTokenValid(refreshToken))
-        .thenReturn(true);
+    // Arrange
+    String refreshToken = "invalid-refresh-token";
 
-        when(jwtService.isRefreshToken(refreshToken))
-                .thenReturn(true);
+    when(jwtService.isTokenValid(refreshToken))
+            .thenReturn(false);
 
-        when(jwtService.hashToken(refreshToken))
-                .thenReturn("hashed-refresh-token");
+    // Act + Assert
+    assertThrows(RuntimeException.class,
+            () -> authService.logout(refreshToken));
 
-        when(refreshSessionRepository.findByTokenHashForUpdate("hashed-refresh-token"))
-                .thenReturn(Optional.of(session));
+    // Verify
+    verify(jwtService).isTokenValid(refreshToken);
 
-        // Act
-        authService.logout(refreshToken);              
+    verify(jwtService, never()).isRefreshToken(anyString());
 
-        // Assert
-        verify(session).setRevoked(true);
-        }
+    verify(jwtService, never()).hashToken(anyString());
+
+    verify(refreshSessionRepository, never())
+            .findByTokenHashForUpdate(anyString());
+}
+@Test
+void logoutShouldThrowExceptionWhenAccessTokenIsPassed() {
+
+    // Arrange
+    String accessToken = "access-token";
+
+    when(jwtService.isTokenValid(accessToken))
+            .thenReturn(true);
+
+    when(jwtService.isRefreshToken(accessToken))
+            .thenReturn(false);
+
+    // Act + Assert
+    assertThrows(RuntimeException.class,
+            () -> authService.logout(accessToken));
+
+    // Verify
+    verify(jwtService).isTokenValid(accessToken);
+
+    verify(jwtService).isRefreshToken(accessToken);
+
+    verify(jwtService, never()).hashToken(anyString());
+
+    verify(refreshSessionRepository, never())
+            .findByTokenHashForUpdate(anyString());
+}
+@Test
+void logoutShouldThrowExceptionWhenRefreshSessionDoesNotExist() {
+
+    // Arrange
+    String refreshToken = "refresh-token";
+
+    when(jwtService.isTokenValid(refreshToken))
+            .thenReturn(true);
+
+    when(jwtService.isRefreshToken(refreshToken))
+            .thenReturn(true);
+
+    when(jwtService.hashToken(refreshToken))
+            .thenReturn("hashed-refresh-token");
+
+    when(refreshSessionRepository.findByTokenHashForUpdate("hashed-refresh-token"))
+            .thenReturn(Optional.empty());
+
+    // Act + Assert
+    RuntimeException exception = assertThrows(
+            RuntimeException.class,
+            () -> authService.logout(refreshToken)
+    );
+
+    // Assert exception message
+    assertEquals("Refresh session not found", exception.getMessage());
+
+    // Verify
+    verify(refreshSessionRepository)
+            .findByTokenHashForUpdate("hashed-refresh-token");
+}       
 }
